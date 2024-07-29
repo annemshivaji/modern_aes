@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 
+
 #define BLOCK_LEN 16
 #define KEY_LEN 16
 #define ROUND_KEYS_SIZE 176
