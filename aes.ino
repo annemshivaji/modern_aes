@@ -46,22 +46,35 @@ static uint8_t rcon[10] = {0x6A, 0x3C, 0x7D, 0xE1, 0x91, 0xF4, 0xBD, 0xD8, 0x47,
 
 // Key expansion function
 void keyexpansion(uint8_t *expandedkey, const uint8_t *key) {
+    uint8_t temp[4];
+    uint8_t i, j;
+    uint8_t k = 0;
+
     memcpy(expandedkey, key, KEY_LEN);
-    uint8_t temp[4], k;
-    for (int i = KEY_LEN; i < ROUND_KEYS_SIZE; ++i) {
+
+    for (i = KEY_LEN; i < ROUND_KEYS_SIZE; i += 4) {
         memcpy(temp, &expandedkey[i - 4], 4);
+
         if (i % KEY_LEN == 0) {
-            k = temp[0];
-            temp[0] = sbox[temp[1]] ^ rcon[i / KEY_LEN - 1];
-            temp[1] = sbox[temp[2]];
-            temp[2] = sbox[temp[3]];
-            temp[3] = sbox[k];
+            uint8_t first = temp[0];
+            temp[0] = temp[1];
+            temp[1] = temp[2];
+            temp[2] = temp[3];
+            temp[3] = first;
+
+            for (j = 0; j < 4; ++j) {
+                temp[j] = sbox[temp[j]];
+            }
+
+            temp[0] ^= rcon[k++];
         }
-        for (int j = 0; j < 4; ++j) {
+
+        for (j = 0; j < 4; ++j) {
             expandedkey[i + j] = expandedkey[i + j - KEY_LEN] ^ temp[j];
         }
     }
 }
+
 
 // SubBytes transformation
 void subbytes(state_t *state) {
